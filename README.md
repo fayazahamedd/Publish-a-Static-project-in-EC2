@@ -20,6 +20,7 @@
 •	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash (It downloads and executes a script from the specified URL)
 •	sudo yum update.
 •	sudo systemctl status nginx (It shows nginx running status)
+•	sudo systemctl enable nginx(It automatically restart the nginx whenever the instance is started)
 •	sudo systemctl start nginx (To start nginx)
 •	sudo vim /etc/nginx/nginx.conf (To edit the configuration of nginx)
 •	Click on I to write the method and paste the below lines!
@@ -53,4 +54,44 @@ location  {
 •	[ec2-user@ip-172-31-4-163 reactPortFolio]$ sudo npm install pm2 -g
 •	[ec2-user@ip-172-31-4-163 reactPortFolio]$ pm2 start npm --name "reactPortFolio" -- run dev.
 •	[ec2-user@ip-172-31-4-163 reactPortFolio]$ pm2 status(To check the status of pm2)
-6.	Copy the Public IPv4 address from the instance summary paste it in Chrome and finally web app starts running.
+•	Copy the Public IPv4 address from the instance summary paste it in Chrome and finally web app starts running.
+6.	Automate the instance (When starting, stopping, or restarting the instance, we need to start Nginx and run PM2 automatically)
+•	sudo yum install cronie -y (Install the ‘cronie’ package)
+•	sudo systemctl enable crond.service - (Enable the ‘cronie’ service)
+•	sudo systemctl start crond.service -  (Start the ‘cronie’ service)
+•	pm2 stop all(to stop all PM2-managed processes)
+•	pm2 kill  (terminate the PM2 daemon)
+•	cd /home/ec2-user/reactPortFolio && /usr/local/bin/pm2 start npm --name "reactPortFolio" -- run dev (setting the project src path to run a]
+•	crontab -e [command to edit the crontab file]
+•	@reboot cd /home/ec2-user/reactPortFolio && /usr/local/bin/pm2 start npm --name "reactPortFolio" -- run dev (restart the node)
+•	sudo su – (Switch to root user)
+•	reboot
+7.	Create Elastics Ips
+•	Navigate to the Elastic IP Address
+•	Click on Allocate Elastic IP address. 
+•	Click on Allocate(With default info)
+•	Once IP is created click on Action > Associate Elastic IP address
+•	In the Associate drop select the instance which you want to tag it.
+•	Navigate to the instance and check the Public IPv4 address. It may change to an Elastic Static API
+8.	COPY THE PUBLIC IPV4 ADDRESS FROM THE INSTANCE SUMMARY, PASTE IT INTO CHROME, AND THE WEB APP WILL START RUNNING.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+a)	sudo journalctl -xe | grep nginx	 (Check for Errors in NGINX Configuration)
+b)	pm2 log  - to view overall logs
+ 
+ 
+
+ 
+
+ 
+
+ 
+ 
+
+ 
+ 
