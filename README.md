@@ -20,8 +20,6 @@ This guide outlines the steps to set up an Amazon EC2 instance for deploying a R
 ## 3. Run Commands
 
 Run the following commands on the connected instance:
-
-
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
 sudo yum update
 sudo systemctl status nginx
@@ -38,7 +36,7 @@ location / {
     proxy_set_header Host $host;
     proxy_cache_bypass $http_upgrade;
 }
-
+## Run this command
 sudo systemctl restart nginx
 sudo yum install git
 
