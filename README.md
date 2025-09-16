@@ -1,34 +1,58 @@
-# Setting Up AWS EC2 Instance for React Portfolio Deployment
+# React Portfolio Deployment on AWS EC2
 
-This guide outlines the steps to set up an Amazon EC2 instance for deploying a React portfolio. Follow these instructions to create a new instance, connect to it using PuTTY, configure nginx, and deploy the React portfolio.
+This repository provides a complete guide to deploy a **React application** on an **AWS EC2 instance** with **NGINX**, **PM2**, and automation for seamless startup. The steps cover instance creation, SSH connection, environment setup, deployment, and troubleshooting.
 
-## 1. Create a New Instance
+---
 
-- Choose Amazon Linux and 64-bit Architecture for the AMI.
-- Create a new Key Pair with a random name and download the `.ppk` private key file.
-- Allow SSH and HTTPS traffic from the internet.
-- Launch the instance.
+## Overview
 
-## 2. Connect Instance with PuTTY
+Welcome to the React Portfolio deployment guide! This setup demonstrates how to:
 
-- Download and extract PuTTY.
-- Copy the Public IPv4 DNS address of the instance.
-- Paste the DNS address in the Host Name (or IP address) field in PuTTY.
-- Configure SSH and Authentication settings by providing the private key file.
-- Open the connection and authenticate as `ec2-user`.
+- Create and configure an EC2 instance
+- Install Node.js, NGINX, and PM2
+- Clone and run a React application
+- Automate processes for startup
+- Associate Elastic IP for a static web address
 
-## 3. Run Commands
+---
 
-Run the following commands on the connected instance:
+## 1. Create a New EC2 Instance
+
+1. Launch a new instance:
+   - Select **Amazon Linux** with **64-bit Architecture** (AMI ID).  
+   - Create a **new key pair** (.ppk format) and download it.  
+   - Allow **SSH** and **HTTPS** traffic from the internet.  
+   - Click **Launch instance**.
+
+2. Verify the instance is running in the EC2 console.
+
+---
+
+## 2. Connect to EC2 Using PuTTY
+
+1. Download and extract **PuTTY**.  
+2. Copy the **Public IPv4 DNS** from the instance summary.  
+3. Open PuTTY and paste the IP into **Host Name (or IP address)**.  
+4. Navigate to **SSH → Auth → Credentials → Browse** and upload the `.ppk` private key.  
+5. Click **Open** and accept the security alert.  
+6. Login as:  
+   ```bash
+   ec2-user
+3. Setup NGINX and Node Environment
+
+Run the following commands:
+
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
-sudo yum update
+sudo yum update -y
 sudo systemctl status nginx
 sudo systemctl enable nginx
 sudo systemctl start nginx
 sudo vim /etc/nginx/nginx.conf
 
 
-location / {
+Add this block in NGINX configuration:
+
+location {
     proxy_pass http://localhost:3210;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
@@ -36,18 +60,91 @@ location / {
     proxy_set_header Host $host;
     proxy_cache_bypass $http_upgrade;
 }
-## Run this command
+
+
+Restart NGINX:
+
 sudo systemctl restart nginx
-sudo yum install git
+sudo systemctl status nginx
 
-
-cd ~
-sudo chmod -R 777 reactPortFolio/
+4. Clone React Repository
+sudo yum install git -y
+git clone https://github.com/fayazahamedd/reactPortFolio.git
 cd reactPortFolio/
+sudo chmod -R 777 reactPortFolio/
 sudo yum install -y nodejs
 sudo npm install -g npm@10.3.0
-npm install -force
-sudo yum install xdg-utils
+npm install --force
+sudo yum install xdg-utils -y
+npm run dev
+npm run build
+sudo npm install pm2 -g
+pm2 start npm --name "reactPortFolio" -- run dev
+pm2 status
 
 
-```bash
+Open the Public IPv4 address in your browser to verify the web app is running.
+
+5. Automate Instance Startup
+
+Install cronie for scheduled tasks:
+
+sudo yum install cronie -y
+sudo systemctl enable crond.service
+sudo systemctl start crond.service
+
+
+Setup PM2 to start on reboot:
+
+pm2 stop all
+pm2 kill
+cd /home/ec2-user/reactPortFolio
+/usr/local/bin/pm2 start npm --name "reactPortFolio" -- run dev
+crontab -e
+
+
+Add the following line in crontab:
+
+@reboot cd /home/ec2-user/reactPortFolio && /usr/local/bin/pm2 start npm --name "reactPortFolio" -- run dev
+
+
+Switch to root and reboot:
+
+sudo su -
+reboot
+
+6. Allocate Elastic IP
+
+Navigate to Elastic IPs in the AWS console.
+
+Click Allocate Elastic IP address → Allocate.
+
+Associate the Elastic IP to your instance.
+
+Verify that the Public IPv4 address updates to the Elastic IP.
+
+Paste the Elastic IP in your browser to access the application.
+
+7. Troubleshooting
+
+Check NGINX errors:
+
+sudo journalctl -xe | grep nginx
+
+
+View PM2 logs:
+
+pm2 log
+
+
+Ensure NGINX is active and PM2 is running your React app correctly.
+
+8. Notes
+
+Make sure to maintain the .ppk key safely for SSH access.
+
+Use Elastic IP for a stable public address.
+
+Always test PM2 and NGINX after reboot to ensure services are running.
+
+THE END
